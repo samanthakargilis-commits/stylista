@@ -1,6 +1,7 @@
 import { planDay } from "@/lib/planner";
 import { appUrl, sendPush, sendSms } from "@/lib/notify";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { sendLook, telegram } from "@/lib/telegram";
 import { localParts } from "@/lib/time";
 import type { DayPlanRow, Profile } from "@/lib/types";
 
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
   const { data: profiles, error } = await db
     .from("profiles")
     .select("*")
-    .or("notify_push.eq.true,notify_sms.eq.true")
+    .or("notify_push.eq.true,notify_sms.eq.true,notify_telegram.eq.true")
     .returns<Profile[]>();
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
@@ -61,6 +62,9 @@ async function deliver(profile: Profile, date: string) {
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     await sendPush(db, profile.user_id, { title: "Stylista", body: message, url: `${appUrl()}/` });
+    if (profile.notify_telegram && profile.telegram_chat_id) {
+      await telegram("sendMessage", { chat_id: profile.telegram_chat_id, text: `Stylista: ${message}` }).catch(() => {});
+    }
     throw e;
   }
 
@@ -78,5 +82,9 @@ async function deliver(profile: Profile, date: string) {
   const texted = profile.notify_sms
     ? await sendSms(profile.phone, `${row.plan.headline}\n${top.howToWear}${pack}\n${appUrl()}/`, collage)
     : false;
-  return { user: profile.user_id, plan: row.id, pushed, texted };
+  const telegrammed =
+    profile.notify_telegram && profile.telegram_chat_id
+      ? await sendLook(profile.telegram_chat_id, row, 0, appUrl()).then(() => true)
+      : false;
+  return { user: profile.user_id, plan: row.id, pushed, texted, telegrammed };
 }

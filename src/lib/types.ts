@@ -68,6 +68,9 @@ export type Profile = {
   phone: string;
   notify_push: boolean;
   notify_sms: boolean;
+  notify_telegram: boolean;
+  telegram_chat_id: number | null;
+  telegram_link_code: string | null;
   last_laundry: string | null;
   last_notified_on: string | null;
 };

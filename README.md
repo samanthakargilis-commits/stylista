@@ -13,7 +13,7 @@ Built with Next.js, Supabase (accounts, data, photos) and the Claude API. Weathe
 
 ### 1. Supabase (database, sign-in, photos)
 1. Create a free project at [supabase.com](https://supabase.com).
-2. **SQL Editor** → paste all of [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) → Run.
+2. **SQL Editor** → paste all of [`supabase/migrations/0001_init.sql`](supabase/migrations/0001_init.sql) → Run. Then do the same with each later file in [`supabase/migrations`](supabase/migrations), in order.
 3. **Authentication → Email Templates → Magic Link**: add the line `Your code: {{ .Token }}` to the template. (On iPhone, a Home Screen app can't receive the sign-in link, so you type the code instead.)
 4. **Project Settings → API**: copy the Project URL, the `anon` key and the `service_role` key.
 
@@ -41,6 +41,15 @@ The [morning workflow](.github/workflows/morning.yml) pings the app every 15 min
 3. **More → Morning notification**: set the time → **Turn on for this device** → **Send me a test**.
 4. **More → Weather & calendar**: set home and work (a ZIP code always works) and paste your calendar link.
 5. Add your clothes in **Closet** (you can select lots of photos at once).
+
+### Recommended: the collage on Telegram (free)
+iPhone notifications from web apps show text only. Telegram shows the picture right in the notification, for free.
+1. In Telegram, message [@BotFather](https://t.me/BotFather) → `/newbot` → pick a name. Copy the token and the bot's username.
+2. On Vercel, set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` and `TELEGRAM_WEBHOOK_SECRET` (any long random string), then redeploy.
+3. Point the bot at your app, once: `curl -X POST -H "Authorization: Bearer $CRON_SECRET" $APP_URL/api/telegram/setup`
+4. In Stylista: **More → Morning notification → Connect Telegram** → tap **Start** in Telegram.
+
+Each morning's message has **Wearing this** (marks the pieces dirty) and **Next look** buttons.
 
 ### Optional: text messages with the collage
 iPhone notifications from web apps show text only. To get the outfit picture right in the notification, create a [Twilio](https://twilio.com) account, buy a number with MMS, complete US carrier registration (A2P 10DLC or toll-free verification), then set `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN` and `TWILIO_FROM` on Vercel. Turn on texts in **More → Morning notification**.
