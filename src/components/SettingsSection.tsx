@@ -158,6 +158,36 @@ export function NotificationsSection() {
       </section>
 
       <section className="space-y-2 rounded-2xl bg-card p-4">
+        <h3 className="font-serif text-lg text-ink">Telegram with the collage (free)</h3>
+        <p className="text-sm text-muted">
+          Your look arrives as a Telegram message with the outfit picture right in the notification, plus buttons for
+          &ldquo;Wearing this&rdquo; and &ldquo;Next look&rdquo;. Install Telegram first, then connect.
+        </p>
+        {data.profile.telegram_chat_id ? (
+          <label className="flex items-center gap-2 text-sm text-ink">
+            <input
+              type="checkbox"
+              checked={data.profile.notify_telegram}
+              onChange={(e) => updateProfile({ notify_telegram: e.target.checked })}
+            />
+            Send my look on Telegram every morning
+          </label>
+        ) : (
+          <Button
+            disabled={busy}
+            onClick={() =>
+              run(async () => {
+                const { url } = await callApi<{ url: string }>("/api/telegram/link");
+                window.location.href = url;
+              })
+            }
+          >
+            Connect Telegram
+          </Button>
+        )}
+      </section>
+
+      <section className="space-y-2 rounded-2xl bg-card p-4">
         <h3 className="font-serif text-lg text-ink">Text message with the collage</h3>
         <p className="text-sm text-muted">The outfit picture shows right in the text, even on iPhone.</p>
         <Field label="Mobile number">
@@ -191,9 +221,9 @@ export function NotificationsSection() {
         disabled={busy}
         onClick={() =>
           run(async () => {
-            const res = await callApi<{ pushed: number; texted: boolean }>("/api/push/test");
+            const res = await callApi<{ pushed: number; texted: boolean; telegrammed: boolean }>("/api/push/test");
             setStatus(
-              `Test sent: ${res.pushed} device notification${res.pushed === 1 ? "" : "s"}${res.texted ? " and a text" : ""}.`,
+              `Test sent: ${res.pushed} device notification${res.pushed === 1 ? "" : "s"}${res.texted ? ", a text" : ""}${res.telegrammed ? ", a Telegram message" : ""}.`,
             );
           })
         }

@@ -1,6 +1,7 @@
 import { appUrl, sendPush, sendSms } from "@/lib/notify";
 import { authed } from "@/lib/route";
 import { supabaseAdmin } from "@/lib/supabase/server";
+import { telegram } from "@/lib/telegram";
 import type { Profile } from "@/lib/types";
 
 /** Sends a test notification (and a test text, if texts are on). */
@@ -15,5 +16,12 @@ export const POST = authed(async (userId) => {
   const texted = profile?.notify_sms && profile.phone
     ? await sendSms(profile.phone, "Stylista: this is where your look will show up each morning ✨")
     : false;
-  return Response.json({ pushed, texted });
+  const telegrammed =
+    profile?.notify_telegram && profile.telegram_chat_id
+      ? await telegram("sendMessage", {
+          chat_id: profile.telegram_chat_id,
+          text: "Stylista: this is where your look will show up each morning, with the outfit collage ✨",
+        }).then(() => true)
+      : false;
+  return Response.json({ pushed, texted, telegrammed });
 });
