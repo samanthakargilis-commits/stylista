@@ -1,0 +1,22 @@
+name: Morning looks
+
+# Calls the app every 15 minutes; the app decides who is due (each person's own
+# notification time and time zone). Needs repo secrets APP_URL and CRON_SECRET.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    if: ${{ vars.MORNING_JOB_ENABLED == 'true' }}
+    steps:
+      - name: Send due morning looks
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl --fail-with-body -sS -m 290 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$APP_URL/api/cron/morning"
